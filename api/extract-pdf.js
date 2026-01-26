@@ -1,10 +1,10 @@
 import axios from 'axios';
+import Busboy from 'busboy';
 
 const N8N_WEBHOOK_URL = 'https://aahaas-ai.app.n8n.cloud/webhook/hotel-rate-extract';
 
 function parseMultipart(req) {
   return new Promise((resolve, reject) => {
-    const Busboy = require('busboy');
     const busboy = Busboy({ headers: req.headers });
     const files = {};
     const fields = {};

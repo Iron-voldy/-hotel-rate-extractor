@@ -72,17 +72,17 @@ app.post('/api/extract-pdf', upload.single('file'), async (req, res) => {
 
     console.log('File received:', req.file.originalname, req.file.size, 'bytes');
 
-    // Create form data to send to n8n
-    const formData = new FormData();
-    formData.append('data', req.file.buffer, {
-      filename: req.file.originalname,
-      contentType: req.file.mimetype
-    });
+    // Convert file to base64
+    const base64 = req.file.buffer.toString('base64');
 
-    const response = await axios.post(N8N_WEBHOOK_URL, formData, {
+    const response = await axios.post(N8N_WEBHOOK_URL, {
+      file: base64,
+      filename: req.file.originalname,
+      mimetype: req.file.mimetype
+    }, {
       responseType: 'arraybuffer',
       headers: {
-        ...formData.getHeaders()
+        'Content-Type': 'application/json'
       }
     });
 

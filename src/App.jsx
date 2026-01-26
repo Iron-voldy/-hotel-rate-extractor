@@ -2,8 +2,8 @@ import { useState } from 'react'
 import axios from 'axios'
 import './App.css'
 
-// Use local proxy server to avoid CORS issues
-const API_BASE = window.location.origin
+// Use relative URL for Vercel deployment (works both locally and in production)
+const API_BASE = ''
 
 function App() {
   const [activeTab, setActiveTab] = useState('text')

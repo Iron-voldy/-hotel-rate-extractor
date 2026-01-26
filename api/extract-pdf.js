@@ -1,24 +1,25 @@
 import axios from 'axios';
-import FormData from 'form-data';
-import Busboy from 'busboy';
 
 const N8N_WEBHOOK_URL = 'https://aahaas-ai.app.n8n.cloud/webhook/hotel-rate-extract';
 
 function parseMultipart(req) {
   return new Promise((resolve, reject) => {
+    const Busboy = require('busboy');
     const busboy = Busboy({ headers: req.headers });
     const files = {};
     const fields = {};
 
-    busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+    // In newer Busboy versions, the 3rd param is an object: { filename, encoding, mimeType }
+    busboy.on('file', (fieldname, file, info) => {
+      const { filename, encoding, mimeType } = info;
       const chunks = [];
       file.on('data', (chunk) => chunks.push(chunk));
       file.on('end', () => {
         files[fieldname] = {
           data: Buffer.concat(chunks),
-          filename,
-          encoding,
-          mimetype
+          filename: filename,
+          encoding: encoding,
+          mimetype: mimeType
         };
       });
     });
@@ -51,17 +52,17 @@ export default async function handler(req, res) {
 
     console.log('File received:', file.filename, file.data.length, 'bytes');
 
-    // Create form data to send to n8n
-    const formData = new FormData();
-    formData.append('data', file.data, {
-      filename: file.filename,
-      contentType: file.mimetype
-    });
+    // Convert file to base64 and send as JSON (avoids multipart issues)
+    const base64 = file.data.toString('base64');
 
-    const response = await axios.post(N8N_WEBHOOK_URL, formData, {
+    const response = await axios.post(N8N_WEBHOOK_URL, {
+      file: base64,
+      filename: file.filename,
+      mimetype: file.mimetype
+    }, {
       responseType: 'arraybuffer',
       headers: {
-        ...formData.getHeaders()
+        'Content-Type': 'application/json'
       }
     });
 

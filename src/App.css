@@ -160,6 +160,7 @@ body {
   display: flex;
   flex-direction: column;
   z-index: 100;
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
 }
 
@@ -421,6 +422,7 @@ body {
   padding: 0 2rem;
   height: var(--topbar-height);
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.9), rgba(168, 85, 247, 0.85));
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 30px rgba(99, 102, 241, 0.2);
@@ -1189,6 +1191,7 @@ body {
   padding: 1.25rem 2rem;
   border-top: 1px solid var(--color-border);
   background: rgba(13, 13, 20, 0.8);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
 

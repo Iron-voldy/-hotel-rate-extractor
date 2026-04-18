@@ -1,6 +1,7 @@
 import axios from 'axios'
 import Busboy from 'busboy'
 import path from 'path'
+import XLSX from 'xlsx'
 
 const N8N_WEBHOOK_URL = 'https://aahaas-ai.app.n8n.cloud/webhook/hotel-rate-extract-vn'
 const ALLOWED_EXTENSIONS = new Set(['.xlsx', '.xls'])
@@ -40,6 +41,38 @@ function parseMultipart(req) {
 const isAllowedVietnamExcelFile = (filename = '') =>
   ALLOWED_EXTENSIONS.has(path.extname(filename).toLowerCase())
 
+function parseWorkbook(buffer) {
+  const workbook = XLSX.read(buffer, {
+    type: 'buffer',
+    raw: false,
+    cellDates: false
+  })
+
+  const sheets = workbook.SheetNames.map((sheetName) => {
+    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
+      header: 1,
+      defval: '',
+      raw: false,
+      blankrows: false
+    })
+
+    const columnCount = rows.reduce((max, row) => Math.max(max, Array.isArray(row) ? row.length : 0), 0)
+
+    return {
+      name: sheetName,
+      rowCount: rows.length,
+      columnCount,
+      rows
+    }
+  })
+
+  return {
+    sheetCount: sheets.length,
+    sheetNames: workbook.SheetNames,
+    sheets
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -60,13 +93,15 @@ export default async function handler(req, res) {
     }
 
     console.log('Vietnam file received:', file.filename, file.data.length, 'bytes')
+    const parsedWorkbook = parseWorkbook(file.data)
 
     const response = await axios.post(
       N8N_WEBHOOK_URL,
       {
         file: file.data.toString('base64'),
         filename: file.filename,
-        mimetype: file.mimetype
+        mimetype: file.mimetype,
+        parsedWorkbook
       },
       {
         responseType: 'arraybuffer',

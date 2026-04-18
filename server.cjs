@@ -3,6 +3,7 @@ const cors = require('cors')
 const axios = require('axios')
 const multer = require('multer')
 const path = require('path')
+const XLSX = require('xlsx')
 
 const app = express()
 const PORT = 3001
@@ -41,6 +42,38 @@ const handleProxyError = (res, error) => {
 const getFileExtension = (filename = '') => path.extname(filename).toLowerCase()
 
 const isVietnamExcelFile = (file) => allowedVietnamExtensions.has(getFileExtension(file.originalname))
+
+const parseWorkbook = (buffer) => {
+  const workbook = XLSX.read(buffer, {
+    type: 'buffer',
+    raw: false,
+    cellDates: false
+  })
+
+  const sheets = workbook.SheetNames.map((sheetName) => {
+    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
+      header: 1,
+      defval: '',
+      raw: false,
+      blankrows: false
+    })
+
+    const columnCount = rows.reduce((max, row) => Math.max(max, Array.isArray(row) ? row.length : 0), 0)
+
+    return {
+      name: sheetName,
+      rowCount: rows.length,
+      columnCount,
+      rows
+    }
+  })
+
+  return {
+    sheetCount: sheets.length,
+    sheetNames: workbook.SheetNames,
+    sheets
+  }
+}
 
 app.use(cors())
 app.use(express.json())
@@ -113,13 +146,15 @@ app.post('/api/extract-vietnam-excel', upload.single('file'), async (req, res) =
     }
 
     console.log('Vietnam file received:', req.file.originalname, req.file.size, 'bytes')
+    const parsedWorkbook = parseWorkbook(req.file.buffer)
 
     const response = await axios.post(
       VIETNAM_WEBHOOK_URL,
       {
         file: req.file.buffer.toString('base64'),
         filename: req.file.originalname,
-        mimetype: req.file.mimetype
+        mimetype: req.file.mimetype,
+        parsedWorkbook
       },
       {
         responseType: 'arraybuffer',

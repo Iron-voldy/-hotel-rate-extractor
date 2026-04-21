@@ -67,6 +67,52 @@ const TAB_CONTENT = {
     missingFileMessage: 'Please select a Vietnam Excel file',
     failureMessage: 'Failed to process the Vietnam Excel file. Please try again.',
     fileTypeLabel: 'XLS'
+  },
+  singapore: {
+    navLabel: 'Singapore Excel',
+    pageTitle: 'Singapore Excel Upload',
+    pageDescription: 'Upload Singapore hotel rate spreadsheets for AI-powered conversion and download',
+    sectionTitle: 'Upload Singapore Excel Sheet',
+    sectionDescription: 'Upload Singapore Excel files to process them with the Singapore-specific workflow',
+    inputId: 'singapore-upload',
+    accept: '.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel',
+    buttonLabel: 'Upload Singapore Excel & Download Result',
+    primaryPrompt: 'Drag and drop your Singapore Excel here',
+    secondaryPrompt: 'or browse to select a file',
+    restrictions: 'Supported: XLSX, XLS - Singapore files only',
+    readyMessage: 'Ready for Singapore processing',
+    processingStatus: 'Processing Singapore Excel file...',
+    successStatus: 'Singapore Excel processed and downloaded successfully!',
+    endpoint: '/api/extract-singapore-excel',
+    downloadName: 'singapore_rate_data.xlsx',
+    invalidSelectMessage: 'Please select a valid Excel file (.xlsx or .xls)',
+    invalidDropMessage: 'Please drop a valid Excel file (.xlsx or .xls)',
+    missingFileMessage: 'Please select a Singapore Excel file',
+    failureMessage: 'Failed to process the Singapore Excel file. Please try again.',
+    fileTypeLabel: 'XLS'
+  },
+  malaysia: {
+    navLabel: 'Malaysia Excel',
+    pageTitle: 'Malaysia Excel Upload',
+    pageDescription: 'Upload Malaysia hotel rate spreadsheets for AI-powered conversion and download',
+    sectionTitle: 'Upload Malaysia Excel Sheet',
+    sectionDescription: 'Upload Malaysia Excel files to process them with the Malaysia-specific workflow',
+    inputId: 'malaysia-upload',
+    accept: '.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel',
+    buttonLabel: 'Upload Malaysia Excel & Download Result',
+    primaryPrompt: 'Drag and drop your Malaysia Excel here',
+    secondaryPrompt: 'or browse to select a file',
+    restrictions: 'Supported: XLSX, XLS - Malaysia files only',
+    readyMessage: 'Ready for Malaysia processing',
+    processingStatus: 'Processing Malaysia Excel file...',
+    successStatus: 'Malaysia Excel processed and downloaded successfully!',
+    endpoint: '/api/extract-malaysia-excel',
+    downloadName: 'malaysia_rate_data.xlsx',
+    invalidSelectMessage: 'Please select a valid Excel file (.xlsx or .xls)',
+    invalidDropMessage: 'Please drop a valid Excel file (.xlsx or .xls)',
+    missingFileMessage: 'Please select a Malaysia Excel file',
+    failureMessage: 'Failed to process the Malaysia Excel file. Please try again.',
+    fileTypeLabel: 'XLS'
   }
 }
 
@@ -113,7 +159,9 @@ function App() {
   const [contractText, setContractText] = useState('')
   const [selectedFiles, setSelectedFiles] = useState({
     pdf: null,
-    vietnam: null
+    vietnam: null,
+    singapore: null,
+    malaysia: null
   })
   const [isLoading, setIsLoading] = useState(false)
   const [status, setStatus] = useState('')
@@ -121,7 +169,9 @@ function App() {
   const [isDragOver, setIsDragOver] = useState(false)
 
   const activeContent = TAB_CONTENT[activeTab]
-  const activeUploadConfig = activeTab === 'pdf' || activeTab === 'vietnam' ? TAB_CONTENT[activeTab] : null
+  const activeUploadConfig = activeTab === 'pdf' || activeTab === 'vietnam' || activeTab === 'singapore' || activeTab === 'malaysia'
+    ? TAB_CONTENT[activeTab]
+    : null
   const currentSelectedFile = activeUploadConfig ? selectedFiles[activeTab] : null
 
   const resetFeedback = () => {
@@ -232,7 +282,7 @@ function App() {
         throw new Error(errorData.error || errorData.message || 'Server error')
       }
 
-      downloadFile(response.data, fileKey === 'vietnam' ? 'vietnam_rate_data.xlsx' : 'rate_data.xlsx')
+      downloadFile(response.data, uploadConfig.downloadName || 'rate_data.xlsx')
       setStatus(uploadConfig.successStatus)
       clearFile(fileKey)
       setStatus(uploadConfig.successStatus)
@@ -249,7 +299,7 @@ function App() {
       return isPdfFile(file)
     }
 
-    if (fileKey === 'vietnam') {
+    if (fileKey === 'vietnam' || fileKey === 'singapore' || fileKey === 'malaysia') {
       return isExcelFile(file)
     }
 
@@ -368,6 +418,28 @@ function App() {
                 <path d="M8 12h8M8 16h8M8 8h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <span>{TAB_CONTENT.vietnam.navLabel}</span>
+            </button>
+            <button
+              className={`nav-item ${activeTab === 'singapore' ? 'active' : ''}`}
+              onClick={() => handleTabChange('singapore')}
+            >
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M14 2v6h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M8 11h8M8 15h6M8 19h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>{TAB_CONTENT.singapore.navLabel}</span>
+            </button>
+            <button
+              className={`nav-item ${activeTab === 'malaysia' ? 'active' : ''}`}
+              onClick={() => handleTabChange('malaysia')}
+            >
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M14 2v6h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M8 10h8M8 14h8M8 18h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>{TAB_CONTENT.malaysia.navLabel}</span>
             </button>
           </div>
         </nav>

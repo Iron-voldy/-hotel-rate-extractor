@@ -68,6 +68,29 @@ const TAB_CONTENT = {
     failureMessage: 'Failed to process the Vietnam Excel file. Please try again.',
     fileTypeLabel: 'XLS'
   },
+  vietnamCruise: {
+    navLabel: 'Vietnam Cruise',
+    pageTitle: 'Vietnam Cruise Upload',
+    pageDescription: 'Upload Vietnam cruise spreadsheets for AI-powered conversion and download',
+    sectionTitle: 'Upload Vietnam Cruise Excel',
+    sectionDescription: 'Upload Vietnam cruise Excel files to process them with the Vietnam cruise workflow',
+    inputId: 'vietnam-cruise-upload',
+    accept: '.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel',
+    buttonLabel: 'Upload Vietnam Cruise Excel & Download Result',
+    primaryPrompt: 'Drag and drop your Vietnam cruise Excel here',
+    secondaryPrompt: 'or browse to select a file',
+    restrictions: 'Supported: XLSX, XLS - Vietnam cruise files only',
+    readyMessage: 'Ready for Vietnam cruise processing',
+    processingStatus: 'Processing Vietnam cruise Excel file...',
+    successStatus: 'Vietnam cruise Excel processed and downloaded successfully!',
+    endpoint: '/api/extract-vietnam-cruise-excel',
+    downloadName: 'vietnam_cruise_rates.xlsx',
+    invalidSelectMessage: 'Please select a valid Excel file (.xlsx or .xls)',
+    invalidDropMessage: 'Please drop a valid Excel file (.xlsx or .xls)',
+    missingFileMessage: 'Please select a Vietnam cruise Excel file',
+    failureMessage: 'Failed to process the Vietnam cruise Excel file. Please try again.',
+    fileTypeLabel: 'XLS'
+  },
   singapore: {
     navLabel: 'Singapore Excel',
     pageTitle: 'Singapore Excel Upload',
@@ -160,6 +183,7 @@ function App() {
   const [selectedFiles, setSelectedFiles] = useState({
     pdf: null,
     vietnam: null,
+    vietnamCruise: null,
     singapore: null,
     malaysia: null
   })
@@ -169,7 +193,7 @@ function App() {
   const [isDragOver, setIsDragOver] = useState(false)
 
   const activeContent = TAB_CONTENT[activeTab]
-  const activeUploadConfig = activeTab === 'pdf' || activeTab === 'vietnam' || activeTab === 'singapore' || activeTab === 'malaysia'
+  const activeUploadConfig = activeTab === 'pdf' || activeTab === 'vietnam' || activeTab === 'vietnamCruise' || activeTab === 'singapore' || activeTab === 'malaysia'
     ? TAB_CONTENT[activeTab]
     : null
   const currentSelectedFile = activeUploadConfig ? selectedFiles[activeTab] : null
@@ -299,7 +323,7 @@ function App() {
       return isPdfFile(file)
     }
 
-    if (fileKey === 'vietnam' || fileKey === 'singapore' || fileKey === 'malaysia') {
+    if (fileKey === 'vietnam' || fileKey === 'vietnamCruise' || fileKey === 'singapore' || fileKey === 'malaysia') {
       return isExcelFile(file)
     }
 
@@ -418,6 +442,16 @@ function App() {
                 <path d="M8 12h8M8 16h8M8 8h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <span>{TAB_CONTENT.vietnam.navLabel}</span>
+            </button>
+            <button
+              className={`nav-item ${activeTab === 'vietnamCruise' ? 'active' : ''}`}
+              onClick={() => handleTabChange('vietnamCruise')}
+            >
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M3 15.5L12 10l9 5.5M4 12l8-5 8 5M5 8.5L12 4l7 4.5V18a2 2 0 01-2 2H7a2 2 0 01-2-2V8.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M9 16h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              <span>{TAB_CONTENT.vietnamCruise.navLabel}</span>
             </button>
             <button
               className={`nav-item ${activeTab === 'singapore' ? 'active' : ''}`}

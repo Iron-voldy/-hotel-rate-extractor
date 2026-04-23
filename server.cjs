@@ -9,6 +9,7 @@ const app = express()
 const PORT = 3001
 const DEFAULT_WEBHOOK_URL = 'https://aahaas-ai.app.n8n.cloud/webhook/hotel-rate-extract'
 const VIETNAM_WEBHOOK_URL = 'https://aahaas-ai.app.n8n.cloud/webhook/hotel-rate-extract-vn'
+const VIETNAM_CRUISE_WEBHOOK_URL = 'https://aahaas-ai.app.n8n.cloud/webhook/hotel-rate-extract-vn-cruise'
 
 const storage = multer.memoryStorage()
 const upload = multer({ storage })
@@ -171,6 +172,44 @@ app.post('/api/extract-vietnam-excel', upload.single('file'), async (req, res) =
   }
 })
 
+app.post('/api/extract-vietnam-cruise-excel', upload.single('file'), async (req, res) => {
+  try {
+    console.log('Received Vietnam cruise Excel extraction request')
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' })
+    }
+
+    if (!isVietnamExcelFile(req.file)) {
+      return res.status(400).json({ error: 'Only Excel files (.xlsx or .xls) are allowed for Vietnam cruise uploads' })
+    }
+
+    console.log('Vietnam cruise file received:', req.file.originalname, req.file.size, 'bytes')
+    const parsedWorkbook = parseWorkbook(req.file.buffer)
+
+    const response = await axios.post(
+      VIETNAM_CRUISE_WEBHOOK_URL,
+      {
+        file: req.file.buffer.toString('base64'),
+        filename: req.file.originalname,
+        mimetype: req.file.mimetype,
+        parsedWorkbook
+      },
+      {
+        responseType: 'arraybuffer',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+
+    console.log('Vietnam cruise n8n response status:', response.status)
+    sendExcelResponse(res, response.data, 'vietnam_cruise_rates.xlsx')
+  } catch (error) {
+    handleProxyError(res, error)
+  }
+})
+
 app.get('/{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'))
 })
@@ -181,4 +220,5 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`   Network: http://192.16.26.51:${PORT}`)
   console.log(`\nDefault webhook: ${DEFAULT_WEBHOOK_URL}`)
   console.log(`Vietnam webhook: ${VIETNAM_WEBHOOK_URL}\n`)
+  console.log(`Vietnam cruise webhook: ${VIETNAM_CRUISE_WEBHOOK_URL}\n`)
 })
